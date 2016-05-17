@@ -1,0 +1,33 @@
+name: elm-server
+
+dependencies:
+  - base
+  - template-haskell
+  - wai-app-static
+  - directory-tree
+  - wai
+  - warp
+  - transformers
+  - process
+  - filepath
+  - string-conversions
+  - bytestring
+  - shake
+  - http-types
+
+executables:
+  server:
+    main: Main.hs
+    source-dirs:
+      - server/src
+
+tests:
+  spec:
+    main: Spec.hs
+    source-dirs:
+      - server/test
+      - server/src
+    dependencies:
+      - hspec
+      - wreq
+      - mockery
