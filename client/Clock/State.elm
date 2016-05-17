@@ -1,4 +1,4 @@
-module State exposing (..)
+module Clock.State exposing (..)
 
 import Time exposing (Time)
 import Task exposing (Task, perform)

@@ -1,4 +1,4 @@
-module View exposing (..)
+module Clock.View exposing (..)
 
 import           Html exposing (..)
 import           Html.App exposing (..)
@@ -12,15 +12,11 @@ import           Svg.Attributes exposing (..)
 import           Time exposing (Time)
 import           VirtualDom exposing (..)
 
-import           State exposing (..)
+import           Clock.State exposing (..)
 
 view : State -> Html.Html (Maybe Message)
 view state =
-  div [attribute "align" "center"] <|
-    Html.text "here" ::
-    br [] [] ::
-    embed 400 400 (viewState state) ::
-    []
+  embed 200 200 (viewState state)
 
 type Box
   = Box Int Int Int Int
