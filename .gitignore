@@ -1,2 +1,4 @@
 *.cabal
 .stack-work/
+client/elm-stuff/
+assets/index.html
