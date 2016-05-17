@@ -19,7 +19,7 @@ view state =
   div [attribute "align" "center"] <|
     Html.text "here" ::
     br [] [] ::
-    embed 600 600 (viewState state) ::
+    embed 400 400 (viewState state) ::
     []
 
 type Box
@@ -57,11 +57,21 @@ viewTime : Time -> Box -> List (Svg a)
 viewTime time box =
   let
     secondHandLen = Basics.min (fst (center box)) (snd (center box))
-    secondAngle = handAngles time
-    xEnd = sin secondAngle * secondHandLen + fst (center box)
-    yEnd = 0 - cos secondAngle * secondHandLen + snd (center box)
+    minuteHandLen = secondHandLen * 0.8
+    hoursHandLen = secondHandLen * 0.4
+    (secondAngle, minuteAngle, hoursAngle) = handAngles 8 time
   in
-    Debug.log "time" <| mkLine (center box) (xEnd, yEnd)
+    mkHand secondHandLen secondAngle box ++
+    mkHand minuteHandLen minuteAngle box ++
+    mkHand hoursHandLen hoursAngle box
+
+mkHand : Float -> Float -> Box -> List (Svg a)
+mkHand len angle box =
+  let
+    xEnd = sin angle * len + fst (center box)
+    yEnd = 0 - cos angle * len + snd (center box)
+  in
+    mkLine (center box) (xEnd, yEnd)
 
 mkLine : (Float, Float) -> (Float, Float) -> List (Svg a)
 mkLine start end =
@@ -69,15 +79,19 @@ mkLine start end =
     attributes =
       x1 (toString (fst start)) :: y1 (toString (snd start)) ::
       x2 (toString (fst end)) :: y2 (toString (snd end)) ::
-      stroke "#ff0" ::
+      stroke "#fff" ::
       []
   in [line attributes []]
 
-handAngles : Time -> Float
-handAngles time =
-  let seconds = Debug.log "seconds" <| toFloat (round (time / 1000) % 60)
-      secondAngle = tau * seconds / 60
-  in secondAngle
+handAngles : Int -> Time -> (Float, Float, Float)
+handAngles utcOffset time =
+  let seconds = floor (time / 1000)
+      secondAngle = tau * toFloat (seconds % 60) / 60
+      minutes = floor (toFloat seconds / 60)
+      minuteAngle = tau * toFloat (Debug.log "min" (minutes % 60)) / 60
+      hours = floor (toFloat minutes / 60) + utcOffset
+      hoursAngle = tau * toFloat (Debug.log "hours" (hours % 12)) / 12
+  in (secondAngle, minuteAngle, hoursAngle)
 
 tau : Float
 tau = 2 * pi
