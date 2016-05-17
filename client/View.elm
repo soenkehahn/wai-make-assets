@@ -61,36 +61,52 @@ viewTime time box =
     hoursHandLen = secondHandLen * 0.4
     (secondAngle, minuteAngle, hoursAngle) = handAngles 8 time
   in
-    mkHand secondHandLen secondAngle "#f00" box ++
-    mkHand minuteHandLen minuteAngle "#fff" box ++
-    mkHand hoursHandLen hoursAngle "#fff" box
+    mkCircle "#55a" box ++
+    mkHand secondHandLen secondAngle "#f00" 1 box ++
+    mkHand minuteHandLen minuteAngle "#ddd" 3 box ++
+    mkHand hoursHandLen hoursAngle "#aaa" 10 box ++
+    []
 
-mkHand : Float -> Float -> String -> Box -> List (Svg a)
-mkHand len angle color box =
+mkHand : Float -> Float -> String -> Float -> Box -> List (Svg a)
+mkHand len angle color width box =
   let
     xEnd = sin angle * len + fst (center box)
     yEnd = 0 - cos angle * len + snd (center box)
   in
-    mkLine (center box) (xEnd, yEnd) color
+    mkLine (center box) (xEnd, yEnd) color width
 
-mkLine : (Float, Float) -> (Float, Float) -> String -> List (Svg a)
-mkLine start end color =
+mkLine : (Float, Float) -> (Float, Float) -> String -> Float -> List (Svg a)
+mkLine start end color width =
   let
     attributes =
       x1 (toString (fst start)) :: y1 (toString (snd start)) ::
       x2 (toString (fst end)) :: y2 (toString (snd end)) ::
       stroke color ::
+      strokeWidth (toString width) ::
       []
   in [line attributes []]
+
+mkCircle : String -> Box -> List (Svg a)
+mkCircle color box =
+  let
+    (x, y) = center box
+    radius = Basics.min (fst (center box)) (snd (center box))
+    attributes =
+      cx (toString x) :: cy (toString y) ::
+      r (toString radius) ::
+      fill color ::
+      []
+  in
+    [circle attributes []]
 
 handAngles : Int -> Time -> (Float, Float, Float)
 handAngles utcOffset time =
   let seconds = floor (time / 1000)
       secondAngle = tau * toFloat (seconds % 60) / 60
       minutes = floor (toFloat seconds / 60)
-      minuteAngle = tau * toFloat (Debug.log "min" (minutes % 60)) / 60
+      minuteAngle = tau * toFloat (minutes % 60) / 60
       hours = floor (toFloat minutes / 60) + utcOffset
-      hoursAngle = tau * toFloat (Debug.log "hours" (hours % 12)) / 12
+      hoursAngle = tau * toFloat (hours % 12) / 12
   in (secondAngle, minuteAngle, hoursAngle)
 
 tau : Float
