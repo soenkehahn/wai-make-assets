@@ -61,25 +61,25 @@ viewTime time box =
     hoursHandLen = secondHandLen * 0.4
     (secondAngle, minuteAngle, hoursAngle) = handAngles 8 time
   in
-    mkHand secondHandLen secondAngle box ++
-    mkHand minuteHandLen minuteAngle box ++
-    mkHand hoursHandLen hoursAngle box
+    mkHand secondHandLen secondAngle "#f00" box ++
+    mkHand minuteHandLen minuteAngle "#fff" box ++
+    mkHand hoursHandLen hoursAngle "#fff" box
 
-mkHand : Float -> Float -> Box -> List (Svg a)
-mkHand len angle box =
+mkHand : Float -> Float -> String -> Box -> List (Svg a)
+mkHand len angle color box =
   let
     xEnd = sin angle * len + fst (center box)
     yEnd = 0 - cos angle * len + snd (center box)
   in
-    mkLine (center box) (xEnd, yEnd)
+    mkLine (center box) (xEnd, yEnd) color
 
-mkLine : (Float, Float) -> (Float, Float) -> List (Svg a)
-mkLine start end =
+mkLine : (Float, Float) -> (Float, Float) -> String -> List (Svg a)
+mkLine start end color =
   let
     attributes =
       x1 (toString (fst start)) :: y1 (toString (snd start)) ::
       x2 (toString (fst end)) :: y2 (toString (snd end)) ::
-      stroke "#fff" ::
+      stroke color ::
       []
   in [line attributes []]
 
