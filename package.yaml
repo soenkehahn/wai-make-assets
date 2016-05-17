@@ -2,14 +2,9 @@ name: elm-server
 
 dependencies:
   - base
-  - template-haskell
   - wai-app-static
-  - directory-tree
   - wai
   - warp
-  - transformers
-  - process
-  - filepath
   - string-conversions
   - bytestring
   - shake
@@ -31,3 +26,5 @@ tests:
       - hspec
       - wreq
       - mockery
+      - lens
+      - directory

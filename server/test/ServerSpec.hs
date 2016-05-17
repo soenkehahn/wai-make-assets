@@ -4,8 +4,6 @@ module ServerSpec where
 
 import           Control.Lens
 import           Data.ByteString.Lazy (isPrefixOf)
-import           Data.String.Conversions
-import           Network.HTTP.Client (defaultManagerSettings)
 import           Network.Wai.Handler.Warp
 import           Network.Wreq
 import           System.Directory

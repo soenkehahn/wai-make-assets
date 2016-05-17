@@ -4,21 +4,15 @@
 module App where
 
 import           Control.Concurrent
-import           Control.Monad.IO.Class
-import           Data.Foldable
 import           Data.Monoid
 import           Data.String.Conversions
-import           Development.Shake
-import           Language.Haskell.TH
+import           Development.Shake hiding (action)
 import           Network.HTTP.Types.Status
 import           Network.Wai
 import           Network.Wai.Application.Static
 import           Network.Wai.Handler.Warp
-import           System.Directory.Tree
 import           System.Exit
 import           System.IO
-import           System.Process
-import           WaiAppStatic.Storage.Embedded
 
 run :: IO ()
 run = do
