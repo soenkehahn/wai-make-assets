@@ -1,4 +1,4 @@
-name: elm-server
+name: wai-make
 
 dependencies:
   - base
@@ -14,14 +14,14 @@ executables:
   server:
     main: Main.hs
     source-dirs:
-      - server/src
+      - src
 
 tests:
   spec:
     main: Spec.hs
     source-dirs:
-      - server/test
-      - server/src
+      - test
+      - src
     dependencies:
       - hspec
       - wreq
