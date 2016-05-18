@@ -10,6 +10,7 @@ dependencies:
   - bytestring
   - shake
   - http-types
+  - directory
 
 library:
   source-dirs:
@@ -26,5 +27,4 @@ tests:
       - wreq
       - mockery
       - lens
-      - directory
       - silently
