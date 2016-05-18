@@ -5,6 +5,7 @@ module Network.Wai.MakeAssetsSpec where
 import           Control.Exception
 import           Control.Lens
 import           Data.ByteString.Lazy (isPrefixOf)
+import           Data.List (intercalate)
 import           Network.Wai.Handler.Warp
 import           Network.Wreq
 import           System.Directory
@@ -54,7 +55,7 @@ spec = do
         it "missing client/" $ do
           inTempDirectory $ do
             createDirectoryIfMissing True "assets"
-            let expected = unlines $
+            let expected = intercalate "\n" $
                   "missing directory: 'client/'" :
                   "Please create 'client/'." :
                   "(You should put sources for assets in there.)" :
@@ -66,7 +67,7 @@ spec = do
           inTempDirectory $ do
             createDirectoryIfMissing True "client"
             createDirectoryIfMissing True "assets"
-            let expected = unlines $
+            let expected = intercalate "\n" $
                   "missing file: 'client/Makefile'" :
                   "Please create 'client/Makefile'." :
                   "(Which will be invoked to build the assets. It should put compiled assets into 'assets/'.)" :
@@ -77,7 +78,7 @@ spec = do
         it "missing assets/" $ do
           inTempDirectory $ do
             touch "client/Makefile"
-            let expected = unlines $
+            let expected = intercalate "\n" $
                   "missing directory: 'assets/'" :
                   "Please create 'assets/'." :
                   "(All files in 'assets/' will be served.)" :

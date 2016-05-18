@@ -6,6 +6,7 @@ module Network.Wai.MakeAssets (serveAssets) where
 import           Control.Concurrent
 import           Control.Exception
 import           Control.Monad
+import           Data.List (intercalate)
 import           Data.Monoid
 import           Data.String.Conversions
 import           Development.Shake (cmd, Exit(..), Stderr(..), CmdOption(..))
@@ -50,12 +51,11 @@ checkExists :: FileType -> FilePath -> String -> IO ()
 checkExists typ path hint = do
   exists <- (isFile doesFileExist doesDirectoryExist) path
   when (not exists) $ do
-    throwIO $ ErrorCall $ unlines $
+    throwIO $ ErrorCall $ intercalate "\n" $
       ("missing " ++ isFile "file" "directory" ++ ": '" ++ path ++ "'") :
       ("Please create '" ++ path ++ "'.") :
       ("(" ++ hint ++ ")") :
       []
-
   where
     isFile :: a -> a -> a
     isFile a b = case typ of
