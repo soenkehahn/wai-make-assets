@@ -27,3 +27,4 @@ tests:
       - mockery
       - lens
       - directory
+      - silently
