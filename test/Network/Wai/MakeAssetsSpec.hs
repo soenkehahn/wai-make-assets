@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ServerSpec where
+module Network.Wai.MakeAssetsSpec where
 
 import           Control.Lens
 import           Data.ByteString.Lazy (isPrefixOf)
@@ -10,7 +10,7 @@ import           System.Directory
 import           Test.Hspec
 import           Test.Mockery.Directory
 
-import           App
+import           Network.Wai.MakeAssets
 
 spec :: Spec
 spec = do
@@ -21,7 +21,7 @@ spec = do
         createDirectoryIfMissing True "assets"
         writeFile "assets/foo" "bar"
         writeFile "client/Makefile" "all:\n\ttrue"
-        testWithApplication app $ \ port -> do
+        testWithApplication serveAssets $ \ port -> do
           let url = "http://localhost:" ++ show port ++ "/foo"
           response <- get url
           response ^. responseBody `shouldBe` "bar"
@@ -31,7 +31,7 @@ spec = do
         createDirectoryIfMissing True "client"
         createDirectoryIfMissing True "assets"
         writeFile "client/Makefile" "all:\n\techo bar > ../assets/foo"
-        testWithApplication app $ \ port -> do
+        testWithApplication serveAssets $ \ port -> do
           let url = "http://localhost:" ++ show port ++ "/foo"
           response <- get url
           response ^. responseBody `shouldBe` "bar\n"
@@ -41,7 +41,7 @@ spec = do
         createDirectoryIfMissing True "client"
         createDirectoryIfMissing True "assets"
         writeFile "client/Makefile" "all:\n\t>&2 echo error message ; false"
-        testWithApplication app $ \ port -> do
+        testWithApplication serveAssets $ \ port -> do
           let url = "http://localhost:" ++ show port ++ "/foo"
           response <- getWith acceptErrors url
           let body = response ^. responseBody

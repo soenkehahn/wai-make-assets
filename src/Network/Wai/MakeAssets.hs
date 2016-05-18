@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TupleSections #-}
 
-module App where
+module Network.Wai.MakeAssets (serveAssets) where
 
 import           Control.Concurrent
 import           Data.Monoid
@@ -10,25 +10,10 @@ import           Development.Shake hiding (action)
 import           Network.HTTP.Types.Status
 import           Network.Wai
 import           Network.Wai.Application.Static
-import           Network.Wai.Handler.Warp
 import           System.Exit
-import           System.IO
 
-run :: IO ()
-run = do
-  let port = 3000
-      settings =
-        setPort port $
-        setBeforeMainLoop
-          (hPutStrLn stderr ("listening on port " ++ show port)) $
-        defaultSettings
-  runSettings settings =<< app
-
-app :: IO Application
-app = serveClient
-
-serveClient :: IO Application
-serveClient = do
+serveAssets :: IO Application
+serveAssets = do
   let fileApp = staticApp $ defaultFileServerSettings "assets/"
   mvar <- newMVar ()
   return $ \ request respond -> do
