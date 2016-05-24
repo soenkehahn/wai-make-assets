@@ -16,6 +16,12 @@ library:
   source-dirs:
     - src
 
+executables:
+  wai-make-assets:
+    main: wai-make-assets.hs
+    source-dirs:
+      - src
+
 tests:
   spec:
     main: Spec.hs
