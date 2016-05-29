@@ -1,8 +1,15 @@
 name: wai-make-assets
 version: "0.1"
+category: Development
+maintainer: SoenkeHahn@gmail.com
+synopsis: Compiling and serving assets
+description: Small wai library and command line tool for compiling and serving assets (e.g. through ghcjs, elm, sass)
+license: "BSD3"
+
+github: soenkehahn/wai-make-assets
 
 dependencies:
-  - base
+  - base < 99
   - wai-app-static
   - wai
   - warp
