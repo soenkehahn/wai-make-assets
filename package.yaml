@@ -28,6 +28,8 @@ executables:
     main: wai-make-assets.hs
     source-dirs:
       - src
+    dependencies:
+      - getopt-generics
 
 tests:
   spec:
