@@ -16,7 +16,7 @@ install:
   - stack setup
 
 script:
-  - stack test --pedantic --no-terminal --haddock
+  - ./travis.sh
 
 cache:
   directories:
