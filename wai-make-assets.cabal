@@ -3,7 +3,7 @@
 -- see: https://github.com/sol/hpack
 
 name:           wai-make-assets
-version:        0.1
+version:        0.1.1
 synopsis:       Compiling and serving assets
 description:    Small wai library and command line tool for compiling and serving assets (e.g. through ghcjs, elm, sass)
 category:       Development
