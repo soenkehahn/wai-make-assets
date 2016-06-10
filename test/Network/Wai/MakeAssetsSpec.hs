@@ -6,14 +6,18 @@ import           Control.Exception
 import           Control.Lens
 import           Data.ByteString.Lazy (isPrefixOf)
 import           Data.List (intercalate)
+import           Network.Wai
 import           Network.Wai.Handler.Warp
-import           Network.Wreq
+import           Network.Wreq as Wreq
 import           System.Directory
 import           System.IO.Silently
 import           Test.Hspec
 import           Test.Mockery.Directory
 
 import           Network.Wai.MakeAssets
+
+serveDef :: IO Application
+serveDef = serveAssets def
 
 spec :: Spec
 spec = do
@@ -25,7 +29,7 @@ spec = do
           createDirectoryIfMissing True "assets"
           writeFile "assets/foo" "bar"
           writeFile "client/Makefile" "all:\n\ttrue"
-          testWithApplication serveAssets $ \ port -> do
+          testWithApplication serveDef $ \ port -> do
             let url = "http://localhost:" ++ show port ++ "/foo"
             response <- get url
             response ^. responseBody `shouldBe` "bar"
@@ -35,7 +39,18 @@ spec = do
           createDirectoryIfMissing True "client"
           createDirectoryIfMissing True "assets"
           writeFile "client/Makefile" "all:\n\techo bar > ../assets/foo"
-          testWithApplication serveAssets $ \ port -> do
+          testWithApplication serveDef $ \ port -> do
+            let url = "http://localhost:" ++ show port ++ "/foo"
+            response <- get url
+            response ^. responseBody `shouldBe` "bar\n"
+
+      it "allows to configure the name of the 'client/' directory" $ do
+        inTempDirectory $ do
+          createDirectoryIfMissing True "custom"
+          createDirectoryIfMissing True "assets"
+          writeFile "custom/Makefile" "all:\n\techo bar > ../assets/foo"
+          let options = def{ clientDir = "custom" }
+          testWithApplication (serveAssets options) $ \ port -> do
             let url = "http://localhost:" ++ show port ++ "/foo"
             response <- get url
             response ^. responseBody `shouldBe` "bar\n"
@@ -45,7 +60,7 @@ spec = do
           createDirectoryIfMissing True "client"
           createDirectoryIfMissing True "assets"
           writeFile "client/Makefile" "all:\n\t>&2 echo error message ; false"
-          testWithApplication serveAssets $ \ port -> do
+          testWithApplication serveDef $ \ port -> do
             let url = "http://localhost:" ++ show port ++ "/foo"
             response <- getWith acceptErrors url
             let body = response ^. responseBody
@@ -60,7 +75,7 @@ spec = do
                   "Please create 'client/'." :
                   "(You should put sources for assets in there.)" :
                   []
-            testWithApplication serveAssets (\ _ -> return ())
+            testWithApplication serveDef (\ _ -> return ())
               `shouldThrow` errorCall expected
 
         it "missing client/Makefile" $ do
@@ -72,7 +87,7 @@ spec = do
                   "Please create 'client/Makefile'." :
                   "(Which will be invoked to build the assets. It should put compiled assets into 'assets/'.)" :
                   []
-            testWithApplication serveAssets (\ _ -> return ())
+            testWithApplication serveDef (\ _ -> return ())
               `shouldThrow` errorCall expected
 
         it "missing assets/" $ do
@@ -83,10 +98,10 @@ spec = do
                   "Please create 'assets/'." :
                   "(All files in 'assets/' will be served.)" :
                   []
-            catch (testWithApplication serveAssets (\ _ -> return ())) $
+            catch (testWithApplication serveDef (\ _ -> return ())) $
               \ (ErrorCall message) -> do
                 message `shouldBe` expected
 
-acceptErrors :: Options
+acceptErrors :: Wreq.Options
 acceptErrors = defaults &
   checkStatus .~ Just (\ _ _ _ -> Nothing)

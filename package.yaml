@@ -15,9 +15,14 @@ dependencies:
   - warp
   - string-conversions
   - bytestring
+  - data-default
+  - filepath
   - shake
   - http-types
   - directory
+
+ghc-options:
+  -Wall -fno-warn-name-shadowing
 
 library:
   source-dirs:
