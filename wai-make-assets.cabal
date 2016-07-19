@@ -35,7 +35,14 @@ library
     , shake
     , http-types
     , directory
+    , cryptohash
+    , base64-bytestring
+    , text
+    , template-haskell
+    , mime-types
+    , directory-tree
   exposed-modules:
+      Network.Wai.Application.Static.Missing
       Network.Wai.MakeAssets
   default-language: Haskell2010
 
@@ -56,8 +63,15 @@ executable wai-make-assets
     , shake
     , http-types
     , directory
+    , cryptohash
+    , base64-bytestring
+    , text
+    , template-haskell
+    , mime-types
+    , directory-tree
     , getopt-generics
   other-modules:
+      Network.Wai.Application.Static.Missing
       Network.Wai.MakeAssets
   default-language: Haskell2010
 
@@ -80,12 +94,21 @@ test-suite spec
     , shake
     , http-types
     , directory
+    , cryptohash
+    , base64-bytestring
+    , text
+    , template-haskell
+    , mime-types
+    , directory-tree
     , hspec
     , wreq
     , mockery
     , lens
     , silently
+    , mtl
   other-modules:
       Network.Wai.MakeAssetsSpec
+      Utils
+      Network.Wai.Application.Static.Missing
       Network.Wai.MakeAssets
   default-language: Haskell2010

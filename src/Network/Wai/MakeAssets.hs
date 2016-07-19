@@ -1,7 +1,12 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TupleSections #-}
 
-module Network.Wai.MakeAssets (serveAssets, Options(..), def) where
+module Network.Wai.MakeAssets (
+  serveAssets,
+  serveAssetsEmbedded,
+  Options(..),
+  def,
+) where
 
 import           Control.Concurrent
 import           Control.Exception
@@ -11,12 +16,16 @@ import           Data.List (intercalate)
 import           Data.Monoid
 import           Data.String.Conversions
 import           Development.Shake (cmd, Exit(..), Stderr(..), CmdOption(..))
+import           Language.Haskell.TH
 import           Network.HTTP.Types.Status
 import           Network.Wai
 import           Network.Wai.Application.Static
 import           System.Directory
 import           System.Exit
 import           System.FilePath
+import           System.IO
+
+import           Network.Wai.Application.Static.Missing
 
 data Options
   = Options {
@@ -34,12 +43,28 @@ serveAssets options = do
   let fileApp = staticApp $ defaultFileServerSettings "assets/"
   mvar <- newMVar ()
   return $ \ request respond -> do
-    (Exit exitCode, Stderr errs) <- synchronize mvar $
-      cmd (Cwd (clientDir options)) "make"
-    case exitCode of
-      ExitSuccess -> fileApp request respond
-      ExitFailure _ -> respond $ responseLBS internalServerError500 [] $
+    makeResult <- synchronize mvar $ callMake options
+    case makeResult of
+      Right () -> fileApp request respond
+      Left errs -> respond $ responseLBS internalServerError500 [] $
         cs "make error:\n" <> errs
+
+callMake :: Options -> IO (Either LBS ())
+callMake options = do
+  hPutStrLn stderr $ "running " ++ clientDir options </> "Makefile..."
+  (Exit exitCode, Stderr errs) <- cmd (Cwd (clientDir options)) "make"
+  return $ case exitCode of
+    ExitSuccess -> Right ()
+    ExitFailure _ -> Left errs
+
+-- | Returns an 'Exp' of type Application
+serveAssetsEmbedded :: Options -> Q Exp
+serveAssetsEmbedded options = do
+  runIO $ startupChecks options
+  makeResult <- runIO $ callMake options
+  case makeResult of
+    Right () -> serveFilesEmbedded "assets"
+    Left err -> runIO $ throwIO $ ErrorCall $ cs err
 
 synchronize :: MVar () -> IO a -> IO a
 synchronize mvar action = modifyMVar mvar $ \ () -> ((), ) <$> action

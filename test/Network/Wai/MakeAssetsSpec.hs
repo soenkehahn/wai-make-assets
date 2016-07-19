@@ -1,20 +1,31 @@
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
+
+{-# OPTIONS_GHC -fno-warn-missing-methods #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Network.Wai.MakeAssetsSpec where
 
 import           Control.Exception
 import           Control.Lens
+import           Control.Monad.Writer
 import           Data.ByteString.Lazy (isPrefixOf)
 import           Data.List (intercalate)
+import           Language.Haskell.TH
+import           Language.Haskell.TH.Syntax
 import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Network.Wreq as Wreq
 import           System.Directory
+import           System.IO
 import           System.IO.Silently
-import           Test.Hspec
+import           Test.Hspec hiding (runIO)
 import           Test.Mockery.Directory
 
+import           Network.Wai.Application.Static.Missing
 import           Network.Wai.MakeAssets
+import           Utils
 
 serveDef :: IO Application
 serveDef = serveAssets def
@@ -22,7 +33,7 @@ serveDef = serveAssets def
 spec :: Spec
 spec = do
   around_ silence $ do
-    describe "serverClient" $ do
+    describe "serveAssets" $ do
       it "returns static files" $ do
         inTempDirectory $ do
           createDirectoryIfMissing True "client"
@@ -102,6 +113,102 @@ spec = do
               \ (ErrorCall message) -> do
                 message `shouldBe` expected
 
+    describe "serveAssetsEmbedded" $ do
+      it "allows to serve files when being run from a different directory" $ do
+        let app = $(runIO $ inTempDirectory $ do
+              touch "client/Makefile"
+              writeFile "client/Makefile" "all:\n\techo fooBody > ../assets/foo"
+              touch "assets/.keep"
+              testInIO $ serveAssetsEmbedded $ def)
+        inTempDirectory $ do
+          testWithApplication (return app) $ \ port -> do
+            let url = "http://localhost:" ++ show port ++ "/foo"
+            response <- get url
+            response ^. responseBody `shouldBe` "fooBody\n"
+
+      it "outputs a message that it runs the Makefile" $ do
+        inTempDirectory $ do
+          touch "client/Makefile"
+          writeFile "client/Makefile" "all:\n\techo fooBody > ../assets/foo"
+          touch "assets/.keep"
+          output <- hCapture_ [stderr] $ testInIO $ serveAssetsEmbedded $ def
+          output `shouldContain` "running client/Makefile..."
+
+    describe "serveFilesEmbedded" $ do
+      let testFile :: Application -> String -> IO ()
+          testFile app path = do
+            testWithApplication (return app) $ \ port -> do
+              let url = "http://localhost:" ++ show port ++ path
+              response <- get url
+              response ^. responseBody `shouldBe` "fileContent"
+
+      it "serves files from a directory" $ do
+        let app :: Application
+            app = $(runIO $ inTempDirectory $ do
+              touch "files/foo"
+              writeFile "files/foo" "fileContent"
+              testInIO $ serveFilesEmbedded "files")
+        testFile app "/foo"
+
+      it "works if given directory with trailing slash" $ do
+        let app :: Application
+            app = $(do
+              runIO $ inTempDirectory $ do
+                touch "files/foo"
+                writeFile "files/foo" "fileContent"
+                testInIO $ serveFilesEmbedded "files/")
+        testFile app "/foo"
+
+      it "works for nested directories" $ do
+        let app :: Application
+            app = $(do
+              runIO $ inTempDirectory $ do
+                touch "files/foo/bar"
+                writeFile "files/foo/bar" "fileContent"
+                testInIO $ serveFilesEmbedded "files")
+        testFile app "/foo/bar"
+
+      it "throws a nicer error when the directory doesn't exist" $ do
+        inTempDirectory $ do
+          runQ (serveFilesEmbedded "foo") `shouldThrow`
+            errorCall "directory not found: foo"
+
+      it "guesses the mime type" $ do
+        let app :: Application
+            app = $(runIO $ inTempDirectory $ do
+              touch "files/foo.html"
+              testInIO $ serveFilesEmbedded "files")
+        testWithApplication (return app) $ \ port -> do
+          let url = "http://localhost:" ++ show port ++ "/foo.html"
+          response <- get url
+          response ^. responseHeader "content-type" `shouldBe`
+            "text/html"
+
+      it "serves index.html on /" $ do
+        let app :: Application
+            app = $(do
+              runIO $ inTempDirectory $ do
+                touch "files/index.html"
+                writeFile "files/index.html" "fileContent"
+                testInIO $ serveFilesEmbedded "files")
+        testFile app "/"
+
+      it "adds client/* to dependent files" $ do
+        inTempDirectory $ do
+          touch "files/foo"
+          touch "files/bar"
+          dependentFiles <- collectDependentFiles $ do
+            _ <- serveFilesEmbedded "files"
+            return ()
+          dependentFiles `shouldBe` ["files/foo", "files/bar"]
+
 acceptErrors :: Wreq.Options
 acceptErrors = defaults &
   checkStatus .~ Just (\ _ _ _ -> Nothing)
+
+collectDependentFiles :: Q () -> IO [FilePath]
+collectDependentFiles = execWriterT . runQ
+
+instance Quasi (WriterT [FilePath] IO) where
+  qRunIO = Control.Monad.Writer.lift
+  qAddDependentFile = tell . pure

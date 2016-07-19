@@ -20,6 +20,12 @@ dependencies:
   - shake
   - http-types
   - directory
+  - cryptohash
+  - base64-bytestring
+  - text
+  - template-haskell
+  - mime-types
+  - directory-tree
 
 ghc-options:
   -Wall -fno-warn-name-shadowing
@@ -48,3 +54,4 @@ tests:
       - mockery
       - lens
       - silently
+      - mtl
