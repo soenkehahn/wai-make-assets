@@ -1,19 +1,13 @@
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
-
-{-# OPTIONS_GHC -fno-warn-missing-methods #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Network.Wai.MakeAssetsSpec where
 
 import           Control.Exception
 import           Control.Lens
-import           Control.Monad.Writer
 import           Data.ByteString.Lazy (isPrefixOf)
 import           Data.List (intercalate)
 import           Language.Haskell.TH
-import           Language.Haskell.TH.Syntax
 import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Network.Wreq as Wreq
@@ -205,10 +199,3 @@ spec = do
 acceptErrors :: Wreq.Options
 acceptErrors = defaults &
   checkStatus .~ Just (\ _ _ _ -> Nothing)
-
-collectDependentFiles :: Q () -> IO [FilePath]
-collectDependentFiles = execWriterT . runQ
-
-instance Quasi (WriterT [FilePath] IO) where
-  qRunIO = Control.Monad.Writer.lift
-  qAddDependentFile = tell . pure
