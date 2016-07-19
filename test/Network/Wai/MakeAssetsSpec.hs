@@ -121,7 +121,7 @@ spec = do
               touch "assets/.keep"
               testInIO $ serveAssetsEmbedded $ def)
         inTempDirectory $ do
-          testWithApplication (return app) $ \ port -> do
+          testWithApplication app $ \ port -> do
             let url = "http://localhost:" ++ show port ++ "/foo"
             response <- get url
             response ^. responseBody `shouldBe` "fooBody\n"

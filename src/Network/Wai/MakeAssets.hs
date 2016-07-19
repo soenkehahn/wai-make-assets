@@ -57,13 +57,13 @@ callMake options = do
     ExitSuccess -> Right ()
     ExitFailure _ -> Left errs
 
--- | Returns an 'Exp' of type Application
+-- | Returns an 'Exp' of type IO Application
 serveAssetsEmbedded :: Options -> Q Exp
 serveAssetsEmbedded options = do
   runIO $ startupChecks options
   makeResult <- runIO $ callMake options
   case makeResult of
-    Right () -> serveFilesEmbedded "assets"
+    Right () -> [|return $(serveFilesEmbedded "assets")|]
     Left err -> runIO $ throwIO $ ErrorCall $ cs err
 
 synchronize :: MVar () -> IO a -> IO a
