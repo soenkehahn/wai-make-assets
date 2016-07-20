@@ -127,6 +127,7 @@ spec = do
           touch "assets/.keep"
           output <- hCapture_ [stderr] $ testInIO $ serveAssetsEmbedded $ def
           output `shouldContain` "running client/Makefile..."
+          output `shouldContain` "embedding files..."
 
     describe "serveFilesEmbedded" $ do
       let testFile :: Application -> String -> IO ()

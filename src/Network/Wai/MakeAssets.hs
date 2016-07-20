@@ -63,7 +63,9 @@ serveAssetsEmbedded options = do
   runIO $ startupChecks options
   makeResult <- runIO $ callMake options
   case makeResult of
-    Right () -> [|return $(serveFilesEmbedded "assets")|]
+    Right () -> do
+      runIO $ hPutStrLn stderr "embedding files..."
+      [|return $(serveFilesEmbedded "assets")|]
     Left err -> runIO $ throwIO $ ErrorCall $ cs err
 
 synchronize :: MVar () -> IO a -> IO a
