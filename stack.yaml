@@ -1,4 +1,10 @@
 resolver: lts-6.0
 
 packages:
-- '.'
+  - '.'
+  - location:
+      git: https://github.com/soenkehahn/wai
+      commit: "3579985"
+    subdirs:
+      - wai-app-static
+    extra-dep: true

@@ -2,7 +2,9 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Network.Wai.Application.Static.Missing (serveFilesEmbedded) where
+module Network.Wai.Application.Static.Missing (
+  serveFilesEmbedded,
+) where
 
 import           Control.Arrow
 import           Control.Exception
@@ -31,9 +33,12 @@ serveFilesEmbedded directory = do
   withAnchor <- runIO $ zipPaths <$> readDirectoryWith LBS.readFile directory
   forM_ (fmap fst withAnchor) addDependentFile
   let tree = fmap (first (makeRelative directory)) withAnchor
-  [|staticApp $(mkSettings (return $ fmap (uncurry toEmbeddable) $ toList tree)){
-    ssIndices = [unsafeToPiece $ T.pack "index.html"]
-  }|]
+  [| let settingsEmbedded = $(mkSettings (return $ fmap (uncurry toEmbeddable) $ toList tree))
+         settingsIndices = settingsEmbedded{
+           ssIndices = [unsafeToPiece $ T.pack "index.html"],
+           ssAddTrailingSlash = True
+         }
+     in staticApp settingsIndices |]
 
 hash :: LBS.ByteString -> Text
 hash = T.take 8 . T.decodeUtf8 . B64.encode .hashlazy

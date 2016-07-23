@@ -19,6 +19,7 @@ newtype Wrap a = Wrap {unWrap :: IO a}
 instance Quasi Wrap where
   qRunIO = Wrap . qRunIO
   qAddDependentFile = \ _ -> return ()
+  qNewName = Wrap . qNewName
 
 collectDependentFiles :: Q () -> IO [FilePath]
 collectDependentFiles = execWriterT . runQ
@@ -26,3 +27,4 @@ collectDependentFiles = execWriterT . runQ
 instance Quasi (WriterT [FilePath] IO) where
   qRunIO = Control.Monad.Writer.lift
   qAddDependentFile = tell . pure
+  qNewName = Control.Monad.Writer.lift . qNewName

@@ -39,6 +39,17 @@ spec = do
             response <- get url
             response ^. responseBody `shouldBe` "bar"
 
+      it "serves index.html" $ do
+        inTempDirectory $ do
+          createDirectoryIfMissing True "client"
+          writeFile "client/Makefile" "all:\n\ttrue"
+          createDirectoryIfMissing True "assets/foo"
+          writeFile "assets/foo/index.html" "indexContent"
+          testWithApplication serveDef $ \ port -> do
+            let url = "http://localhost:" ++ show port ++ "/foo"
+            response <- get url
+            response ^. responseBody `shouldBe` "indexContent"
+
       it "runs 'make' in 'client/' before answering requests" $ do
         inTempDirectory $ do
           createDirectoryIfMissing True "client"
@@ -179,7 +190,7 @@ spec = do
           response ^. responseHeader "content-type" `shouldBe`
             "text/html"
 
-      it "serves index.html on /" $ do
+      it "serves index.html" $ do
         let app :: Application
             app = $(do
               runIO $ inTempDirectory $ do

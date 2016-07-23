@@ -40,7 +40,9 @@ instance Default Options where
 serveAssets :: Options -> IO Application
 serveAssets options = do
   startupChecks options
-  let fileApp = staticApp $ defaultFileServerSettings "assets/"
+  let fileApp = staticApp $ (defaultFileServerSettings "assets"){
+        ssAddTrailingSlash = True
+      }
   mvar <- newMVar ()
   return $ \ request respond -> do
     makeResult <- synchronize mvar $ callMake options
