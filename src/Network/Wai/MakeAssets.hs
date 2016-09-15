@@ -1,7 +1,13 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TupleSections #-}
 
-module Network.Wai.MakeAssets (serveAssets, Options(..), def) where
+module Network.Wai.MakeAssets (
+  serveAssets,
+  Options(..),
+
+  -- * re-exports
+  Default(..),
+) where
 
 import           Control.Concurrent
 import           Control.Exception
@@ -28,6 +34,21 @@ instance Default Options where
     clientDir = "client"
   }
 
+-- | 'serveAssets' will create a wai 'Application' that serves files from the
+-- "assets" directory.
+--
+-- The workflow that 'serveAssets' allows is similar to working on files (for
+-- web-sites) that don't need compilation or generation, e.g. html, css, php or
+-- javascript. You edit the file in an editor, save it, switch to a browser and
+-- hit reload. 'serveAssets' makes sure your browser will be sent up-to-date
+-- files.
+--
+-- To accomplish this, 'serveAssets' assumes that there's a "Makefile" in the
+-- directory pointed to by 'clientDir' (default: "client"). This "Makefile" is
+-- supposed to put compilation results into the "assets" directory. On __every__
+-- request, 'serveAssets' will execute that "Makefile" and only start serving
+-- files once the "Makefile" is done. ('serveAssets' makes sure not to run your
+-- "Makefile" concurrently.)
 serveAssets :: Options -> IO Application
 serveAssets options = do
   startupChecks options
