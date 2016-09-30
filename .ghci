@@ -1,1 +1,1 @@
-:set -iserver/test -iserver/src
+:set -itest -isrc
