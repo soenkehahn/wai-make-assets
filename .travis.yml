@@ -14,9 +14,13 @@ before_install:
 
 install:
   - stack setup
+  - stack install stack-hpc-coveralls
 
 script:
   - ./travis.sh
+
+after_script:
+  - shc wai-make-assets spec
 
 cache:
   directories:
