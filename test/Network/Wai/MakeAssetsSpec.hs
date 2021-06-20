@@ -104,4 +104,4 @@ spec = do
 
 acceptErrors :: Wreq.Options
 acceptErrors = defaults &
-  checkStatus .~ Just (\ _ _ _ -> Nothing)
+  checkResponse .~ Just (\ _ _ -> return ())
