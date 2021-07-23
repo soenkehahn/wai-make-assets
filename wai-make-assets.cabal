@@ -1,4 +1,6 @@
--- This file has been generated from package.yaml by hpack version 0.14.0.
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 
@@ -13,7 +15,6 @@ maintainer:     SoenkeHahn@gmail.com
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
-cabal-version:  >= 1.10
 
 source-repository head
   type: git
@@ -24,19 +25,21 @@ library
       src
   ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
-      base < 99
-    , wai-app-static
-    , wai
-    , warp
-    , string-conversions
+      base <99
     , bytestring
     , data-default
-    , filepath
-    , shake
-    , http-types
     , directory
+    , filepath
+    , http-types
+    , shake
+    , string-conversions
+    , wai
+    , wai-app-static
+    , warp
   exposed-modules:
       Network.Wai.MakeAssets
+  other-modules:
+      Paths_wai_make_assets
   default-language: Haskell2010
 
 executable wai-make-assets
@@ -45,20 +48,21 @@ executable wai-make-assets
       src
   ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
-      base < 99
-    , wai-app-static
-    , wai
-    , warp
-    , string-conversions
+      base <99
     , bytestring
     , data-default
-    , filepath
-    , shake
-    , http-types
     , directory
+    , filepath
     , getopt-generics
+    , http-types
+    , shake
+    , string-conversions
+    , wai
+    , wai-app-static
+    , warp
   other-modules:
       Network.Wai.MakeAssets
+      Paths_wai_make_assets
   default-language: Haskell2010
 
 test-suite spec
@@ -68,23 +72,24 @@ test-suite spec
       test
   ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
-      base < 99
-    , wai-app-static
-    , wai
-    , warp
-    , string-conversions
+      base <99
     , bytestring
     , data-default
-    , filepath
-    , shake
-    , http-types
     , directory
-    , wai-make-assets
+    , filepath
     , hspec
-    , wreq
-    , mockery
+    , http-types
     , lens
+    , mockery
+    , shake
     , silently
+    , string-conversions
+    , wai
+    , wai-app-static
+    , wai-make-assets
+    , warp
+    , wreq
   other-modules:
       Network.Wai.MakeAssetsSpec
+      Paths_wai_make_assets
   default-language: Haskell2010
