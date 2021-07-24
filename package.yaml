@@ -1,5 +1,5 @@
 name: wai-make-assets
-version: "0.2"
+version: "0.3"
 category: Development
 maintainer: SoenkeHahn@gmail.com
 synopsis: Compiling and serving assets
