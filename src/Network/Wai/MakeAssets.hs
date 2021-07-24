@@ -14,7 +14,6 @@ import           Control.Exception
 import           Control.Monad
 import           Data.Default
 import           Data.List (intercalate)
-import           Data.Monoid
 import           Data.String.Conversions
 import           Development.Shake (cmd, Exit(..), Stderr(..), CmdOption(..))
 import           Network.HTTP.Types.Status
